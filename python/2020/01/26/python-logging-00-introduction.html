@@ -1,0 +1,27 @@
+<h1 id="python-logging-00-introduction">Python logging 00 introduction</h1>
+
+<p>There is a logging module in Python standard library.
+And the Python org has great documemtations about it
+<a href="https://docs.python.org/3/library/logging.html">here</a>.
+This series of posts are mostly my digest of those docs.</p>
+
+<p>To give you an idea of how it looks like,
+let’s have a look at an example first:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">&gt;&gt;&gt;</span><span class="kn">import</span> <span class="nn">logging</span>
+<span class="o">&gt;&gt;&gt;</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="p">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">"some_name"</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span><span class="n">logger</span><span class="p">.</span><span class="n">warning</span><span class="p">(</span><span class="s">"some message"</span><span class="p">)</span>
+<span class="n">some</span> <span class="n">message</span>
+</code></pre></div></div>
+
+<p>Here we import logging module from the standard library,
+then we get an instance of logger and lastly we log some
+message at warning level with that logger.</p>
+
+<p>And that is how to log with standard library in its simplest form.</p>
+
+<p>Eventually, you will get to know more about the whole module
+and can easily understand this flow chart:
+<img src="/images/python_stdlib_logging.png" alt="" title="logging flow chart" /></p>
+
+<p>We will learn more about that in the next post.</p>

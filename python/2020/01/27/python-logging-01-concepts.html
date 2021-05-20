@@ -1,0 +1,173 @@
+<h1 id="python-logging-01-concepts">Python Logging 01 Concepts</h1>
+
+<p>We will learn these important concepts:
+<strong>severity level</strong>, <strong>logger</strong>, <strong>handler</strong>, <strong>filter</strong>, <strong>formatter</strong>, <strong>LogRecord</strong>.</p>
+
+<ol id="markdown-toc">
+  <li><a href="#python-logging-01-concepts" id="markdown-toc-python-logging-01-concepts">Python Logging 01 Concepts</a></li>
+  <li><a href="#severity-level" id="markdown-toc-severity-level">severity level</a></li>
+  <li><a href="#logger" id="markdown-toc-logger">logger</a></li>
+  <li><a href="#logrecord" id="markdown-toc-logrecord">LogRecord</a></li>
+  <li><a href="#handler" id="markdown-toc-handler">handler</a></li>
+  <li><a href="#filter" id="markdown-toc-filter">filter</a></li>
+  <li><a href="#formatter" id="markdown-toc-formatter">formatter</a></li>
+</ol>
+
+<h1 id="severity-level">severity level</h1>
+
+<p>The standard severity levels and their applicability are described below (in increasing order of severity):</p>
+
+<table>
+  <tbody>
+    <tr>
+      <td><strong>Level</strong></td>
+      <td><strong>Numeric value</strong></td>
+      <td><strong>When it’s used</strong></td>
+    </tr>
+    <tr>
+      <td>NOTSET</td>
+      <td>0</td>
+      <td>N/A</td>
+    </tr>
+    <tr>
+      <td>DEBUG</td>
+      <td>10</td>
+      <td>Detailed information, typically of interest only when diagnosing problems.</td>
+    </tr>
+    <tr>
+      <td>INFO</td>
+      <td>20</td>
+      <td>Confirmation that things are working as expected.</td>
+    </tr>
+    <tr>
+      <td>WARNING</td>
+      <td>30</td>
+      <td>An indication that something unexpected happened, or indicative of some problem in the near future (e.g. ‘disk space low’). The software is still working as expected.</td>
+    </tr>
+    <tr>
+      <td>ERROR</td>
+      <td>40</td>
+      <td>Due to a more serious problem, the software has not been able to perform some function.</td>
+    </tr>
+    <tr>
+      <td>CRITICAL</td>
+      <td>50</td>
+      <td>A serious error, indicating that the program itself may be unable to continue running.</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="Toast">
+   <span class="Toast-icon"><svg class="octicon octicon-info" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM0 8a8 8 0 1116 0A8 8 0 010 8zm6.5-.25A.75.75 0 017.25 7h1a.75.75 0 01.75.75v2.75h.25a.75.75 0 010 1.5h-2a.75.75 0 010-1.5h.25v-2h-.25a.75.75 0 01-.75-.75zM8 6a1 1 0 100-2 1 1 0 000 2z"></path></svg></span>
+   <span class="Toast-content">If you define a level with the same numeric value, it overwrites the predefined value; the predefined name is lost.</span>
+</div>
+
+<h1 id="logger">logger</h1>
+
+<p>Logging is performed by calling methods on instances of the Logger class (hereafter called loggers). Each logger instance has a name, and they are referred by it.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">&gt;&gt;&gt;</span><span class="kn">import</span> <span class="nn">logging</span>
+<span class="o">&gt;&gt;&gt;</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="p">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">"some_name"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Loggers names are period-separated hierarchical structures.
+Loggers that are further down in the hierarchical list are children of loggers higher up in the list. 
+For example, given a logger with a name of <code class="language-plaintext highlighter-rouge">parent</code>, loggers with names of <code class="language-plaintext highlighter-rouge">parent.child</code> and <code class="language-plaintext highlighter-rouge">parent.child.pet</code> are all descendants of the logger with the name of<code class="language-plaintext highlighter-rouge">parent</code>.
+The <code class="language-plaintext highlighter-rouge">root</code> logger is the parent of all loggers. And if you did not pass a name when calling <code class="language-plaintext highlighter-rouge">getLogger()</code>, a reference to the <code class="language-plaintext highlighter-rouge">root</code> logger will be returned.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">&gt;&gt;&gt;</span><span class="kn">import</span> <span class="nn">logging</span>
+<span class="o">&gt;&gt;&gt;</span><span class="n">logging</span><span class="p">.</span><span class="n">getLogger</span><span class="p">()</span>
+<span class="o">&lt;</span><span class="n">RootLogger</span> <span class="n">root</span> <span class="p">(</span><span class="n">WARNING</span><span class="p">)</span><span class="o">&gt;</span>
+<span class="o">&gt;&gt;&gt;</span><span class="n">logger_parent</span> <span class="o">=</span> <span class="n">logging</span><span class="p">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">"parent"</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span><span class="n">logger_parent</span><span class="p">.</span><span class="n">parent</span>
+<span class="o">&lt;</span><span class="n">RootLogger</span> <span class="n">root</span> <span class="p">(</span><span class="n">WARNING</span><span class="p">)</span><span class="o">&gt;</span>
+<span class="o">&gt;&gt;&gt;</span><span class="n">logger_child</span> <span class="o">=</span> <span class="n">logging</span><span class="p">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">"parent.child"</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span><span class="n">logger_child</span><span class="p">.</span><span class="n">parent</span>
+<span class="o">&lt;</span><span class="n">Logger</span> <span class="n">parent</span> <span class="p">(</span><span class="n">WARNING</span><span class="p">)</span><span class="o">&gt;</span>
+</code></pre></div></div>
+
+<p>A good convention to use when naming loggers is to use a module-level logger, in each module which uses logging, named as follows:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="p">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Multiple calls to <code class="language-plaintext highlighter-rouge">getLogger()</code> with the same name will return a reference to the same logger object.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">&gt;&gt;&gt;</span><span class="kn">import</span> <span class="nn">logging</span>
+<span class="o">&gt;&gt;&gt;</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="p">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">"some_name"</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span><span class="n">logger_two</span> <span class="o">=</span> <span class="n">logging</span><span class="p">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">"some_name"</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span><span class="n">logger</span> <span class="o">==</span> <span class="n">logger_two</span>
+<span class="bp">True</span>
+</code></pre></div></div>
+
+<p>Loggers have a concept of effective level. If a level is not explicitly set on a logger, the level of its parent is used instead as its effective level. This happens recusively until it reaches the root logger, which always has an explicit level set (<code class="language-plaintext highlighter-rouge">WARNING</code> by default).</p>
+
+<p>Read more on Logger <a href="https://docs.python.org/3/library/logging.html#logger-objects">here</a>.</p>
+
+<h1 id="logrecord">LogRecord</h1>
+
+<p>Logging messages are encoded as instances of the LogRecord class. When a logger decides to actually log an event, a LogRecord instance is created from the logging message. Log event information is passed between loggers, handlers, filters and formatters in LogRecord instances.</p>
+
+<p>Read more on LogRecord <a href="https://docs.python.org/3/library/logging.html#logrecord-objects">here</a>.</p>
+
+<h1 id="handler">handler</h1>
+
+<p>Handler objects are responsible for dispatching the appropriate log messages to the handler’s specified destination. Logger objects can add zero or more handler objects to themselves with an <code class="language-plaintext highlighter-rouge">addHandler()</code> method.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="c1"># create logger
+</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="p">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">'simple_example'</span><span class="p">)</span>
+
+<span class="c1"># create console handler
+</span><span class="n">ch</span> <span class="o">=</span> <span class="n">logging</span><span class="p">.</span><span class="n">StreamHandler</span><span class="p">()</span>
+
+<span class="c1"># add ch to logger
+</span><span class="n">logger</span><span class="p">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">ch</span><span class="p">)</span>
+
+<span class="c1"># 'application' code
+</span><span class="n">logger</span><span class="p">.</span><span class="n">error</span><span class="p">(</span><span class="s">'error message'</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>The standard library includes quite a few handler types (see <a href="https://docs.python.org/3/howto/logging.html#useful-handlers">Useful Handlers</a>)</p>
+
+<p>Read more on Handler <a href="https://docs.python.org/3/library/logging.html#handler-objects">here</a>.</p>
+
+<h1 id="filter">filter</h1>
+
+<p>Filters can be used by handlers and loggers for more sophisticated filtering than is provided by levels.</p>
+
+<p>Each filter is passed an instance of LogRecord and returns zero for no, nonzero for yes. Any instance which has a <code class="language-plaintext highlighter-rouge">filter()</code> method that takes one positional argument can be a filter.</p>
+
+<p>Although filters are used primarily to filter records based on more sophisticated criteria than levels, they get to see every record which is processed by the handler or logger they’re attached to: this can be useful if you want to do things like counting how many records were processed by a particular logger or handler, or even in-place modifing the LogRecord being processed. Obviously changing the LogRecord needs to be done with some care, but it does allow the injection of contextual information into logs.</p>
+
+<p>Read more on Filter <a href="https://docs.python.org/3/library/logging.html#filter-objects">here</a>.</p>
+
+<h1 id="formatter">formatter</h1>
+
+<p>Formatter objects configure the final order, structure, and contents of the log message.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="c1"># create logger
+</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="p">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">'simple_example'</span><span class="p">)</span>
+
+<span class="c1"># create console handler
+</span><span class="n">ch</span> <span class="o">=</span> <span class="n">logging</span><span class="p">.</span><span class="n">StreamHandler</span><span class="p">()</span>
+
+<span class="c1"># create formatter
+</span><span class="n">formatter</span> <span class="o">=</span> <span class="n">logging</span><span class="p">.</span><span class="n">Formatter</span><span class="p">(</span><span class="s">'%(asctime)s - %(name)s - %(levelname)s - %(message)s'</span><span class="p">)</span>
+
+<span class="c1"># add formatter to ch
+</span><span class="n">ch</span><span class="p">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">formatter</span><span class="p">)</span>
+
+<span class="c1"># add ch to logger
+</span><span class="n">logger</span><span class="p">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">ch</span><span class="p">)</span>
+
+<span class="c1"># 'application' code
+</span><span class="n">logger</span><span class="p">.</span><span class="n">critical</span><span class="p">(</span><span class="s">'critical message'</span><span class="p">)</span>
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>2005-03-19 15:10:26,773 - simple_example - CRITICAL - critical message
+</code></pre></div></div>
+
+<p>Read more on Formatter <a href="https://docs.python.org/3/library/logging.html#formatter-objects">here</a>.</p>

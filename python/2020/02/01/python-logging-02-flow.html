@@ -1,0 +1,76 @@
+<h1 id="python-logging-02-flow">Python Logging 02 Flow</h1>
+
+<p>Still remember this flow chart?
+<img src="/images/python_stdlib_logging.png" alt="" title="logging flow chart" /></p>
+
+<p>Now that we know those concepts, we can dig into the details and
+start to understand the dynamics.</p>
+
+<h1 class="no_toc" id="logger-flow">logger flow</h1>
+
+<p>Everything starts from logger methods like <code class="language-plaintext highlighter-rouge">log()</code>, <code class="language-plaintext highlighter-rouge">info()</code>, <code class="language-plaintext highlighter-rouge">warning()</code>, etc.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">logging</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="p">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">"some_name"</span><span class="p">)</span>
+<span class="n">logger</span><span class="p">.</span><span class="n">warning</span><span class="p">(</span><span class="s">"some message"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Few things will happen in this order:</p>
+<ol id="markdown-toc">
+  <li><a href="#python-logging-02-flow" id="markdown-toc-python-logging-02-flow">Python Logging 02 Flow</a>    <ol>
+      <li><a href="#check-if-requested-severity-level-is-enabled" id="markdown-toc-check-if-requested-severity-level-is-enabled">check if requested severity level is enabled</a></li>
+      <li><a href="#create-an-instance-of-logrecord-if-enabled" id="markdown-toc-create-an-instance-of-logrecord-if-enabled">create an instance of LogRecord if enabled</a></li>
+      <li><a href="#check-the-logrecord-instance-against-filters" id="markdown-toc-check-the-logrecord-instance-against-filters">check the LogRecord instance against filters</a></li>
+      <li><a href="#invoke-handlers-of-logger-instance" id="markdown-toc-invoke-handlers-of-logger-instance">invoke handlers of logger instance</a>        <ol>
+          <li><a href="#check-severity-level-again" id="markdown-toc-check-severity-level-again">check severity level again</a></li>
+          <li><a href="#filter-again" id="markdown-toc-filter-again">filter again</a></li>
+          <li><a href="#format" id="markdown-toc-format">format</a></li>
+          <li><a href="#emit" id="markdown-toc-emit">emit</a></li>
+        </ol>
+      </li>
+      <li><a href="#propagate-if-configured" id="markdown-toc-propagate-if-configured">propagate if configured</a></li>
+    </ol>
+  </li>
+</ol>
+
+<h2 id="check-if-requested-severity-level-is-enabled">check if requested severity level is enabled</h2>
+
+<p>This is done by checking first the module-level level set by <code class="language-plaintext highlighter-rouge">logging.disable(level)</code> and then the logger’s effective level.</p>
+
+<p>The logger hierarchy is traversed towards the root logger until a value other than <code class="language-plaintext highlighter-rouge">NOTSET</code> is found or reached the root logger whose effective level is always set to <code class="language-plaintext highlighter-rouge">WARNING</code>.</p>
+
+<p>In case of no disable settings, if the requested severity level is greater than or equal to the logger’s effective level, the request will proceed. Nothng happens otherwise.</p>
+
+<h2 id="create-an-instance-of-logrecord-if-enabled">create an instance of LogRecord if enabled</h2>
+
+<p>An instance of <code class="language-plaintext highlighter-rouge">LogRecord</code>(the record) is created at this stage with all the information it gathers at the point of creation, including severity level, logging message string, name of the logger, the full pathname of the source file where the logging call was issued (if available), etc. The record is all the rest of the flow can see. In other words, it is the sole source of information for filters, handlers and formatters.</p>
+
+<h2 id="check-the-logrecord-instance-against-filters">check the LogRecord instance against filters</h2>
+
+<p>Apply this logger’s filters to the record and return <code class="language-plaintext highlighter-rouge">True</code> if the record is to be processed. The filters are consulted in turn, until one of them returns a false value. If none of them return a false value, the record will be processed (passed to handlers). If one returns a false value, no further processing of the record occurs.</p>
+
+<h2 id="invoke-handlers-of-logger-instance">invoke handlers of logger instance</h2>
+
+<h3 id="check-severity-level-again">check severity level again</h3>
+
+<p>Why is there another level check? The level set in the logger determines which severity of messages it will pass to its handlers. The level set in each handler determines which messages that handler will send on.</p>
+
+<h3 id="filter-again">filter again</h3>
+
+<p>Similar to serverity level check, filters added to each handler determines which message that handler will send on</p>
+
+<h3 id="format">format</h3>
+
+<p>Formatters can always be configured beforehand. But when to do the formatting is up to the implementation of handlers.</p>
+
+<h3 id="emit">emit</h3>
+
+<p>This is the step to do whatever it takes to actually log the specified logging record. The log could be written to a file as a string, or sent over a socket as a Python pickle. The standard library includes quite a few handler types (see <a href="https://docs.python.org/3/howto/logging.html#useful-handlers">Useful Handlers</a>)</p>
+
+<h2 id="propagate-if-configured">propagate if configured</h2>
+
+<p>Each logger has an attribute named propagate defaulting to true. If this attribute evaluates to true, events logged to this logger will be passed to the handlers of higher level (ancestor) loggers, in addition to any handlers attached to this logger. Messages are passed directly to the ancestor loggers’ handlers - <strong>neither the level nor filters of the ancestor loggers in question are considered</strong>.</p>
+
+<p>If this evaluates to false, logging messages are not passed to the handlers of ancestor loggers.</p>
+
+<p>If you attach a handler to a logger and one or more of its ancestors, it may emit the same record multiple times. In general, you should not need to attach a handler to more than one logger - if you just attach it to the appropriate logger which is highest in the logger hierarchy, then it will see all events logged by all descendant loggers, provided that their propagate setting is left set to True. A common scenario is to attach handlers only to the root logger, and to let propagation take care of the rest.</p>
